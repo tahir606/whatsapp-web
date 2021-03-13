@@ -24,30 +24,57 @@ async function getMessagesToBeSent() {
     }
 
     try {
-
         let sql, binds, options, result;
 
         sql = 'SELECT * FROM OZEKIMESSAGEOUT WHERE STATUS = :1';
-
         binds = ['send'];
 
-        // For a complete list of options see the documentation.
         options = {
             outFormat: oracledb.OUT_FORMAT_OBJECT,   // query result format
             // extendedMetaData: true,               // get extra metadata
             // prefetchRows:     100,                // internal buffer allocation size for tuning
             // fetchArraySize:   100                 // internal buffer allocation size for tuning
         };
-
         result = await connection.execute(sql, binds, options);
 
-        console.log("Metadata: ");
-        console.dir(result.metaData, {depth: null});
-        console.log("Query results: ");
-        console.dir(result.rows, {depth: null});
-
         return result.rows;
+    } catch (err) {
+        console.error(err);
+    } finally {
+        if (connection) {
+            try {
+                await connection.close()
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    }
+}
 
+async function updateMessageSent(messageId) {
+    let connection = await connect();
+
+    if (!connection) {
+        throw new Error('An Error Occured');
+    }
+
+    try {
+        let sql, binds, options, result;
+
+        sql = 'UPDATE OZEKIMESSAGEOUT set STATUS = :1 WHERE ID = :2';
+        binds = ['transmitted', messageId];
+
+        options = {
+            autoCommit: true,
+            // batchErrors: true,  // continue processing even if there are data errors
+            bindDefs: [
+                { type: oracledb.STRING, maxSize: 50},
+                { type: oracledb.NUMBER }
+            ]
+        };
+
+        result = await connection.execute(sql, binds, options);
+        console.log("Number of rows inserted:", result.rowsAffected);
     } catch (err) {
         console.error(err);
     } finally {
@@ -62,5 +89,6 @@ async function getMessagesToBeSent() {
 }
 
 module.exports = {
-    getMessagesToBeSent: getMessagesToBeSent
+    getMessagesToBeSent: getMessagesToBeSent,
+    updateMessageSent: updateMessageSent,
 }
