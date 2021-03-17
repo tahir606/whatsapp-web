@@ -26,9 +26,7 @@ function sendMessage(number, text, attachment) {
     if (attachment) {
         const media = MessageMedia.fromFilePath(attachment);
         // Sending message with attachment
-        return client.sendMessage(chatId, media, {
-            caption: (text ? text : null)
-        });
+        return client.sendMessage(chatId, media);
     } else {
         return client.sendMessage(chatId, text);
     }
