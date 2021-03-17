@@ -26,8 +26,8 @@ async function getMessagesToBeSent() {
     try {
         let sql, binds, options, result;
 
-        sql = 'SELECT * FROM OZEKIMESSAGEOUT WHERE STATUS = :1';
-        binds = ['send'];
+        sql = 'SELECT ID, RECEIVER, MSG, ATCHM FROM WHATSAPP_MSG WHERE STATUS = :1';
+        binds = ['S'];
 
         options = {
             outFormat: oracledb.OUT_FORMAT_OBJECT,   // query result format
@@ -51,7 +51,7 @@ async function getMessagesToBeSent() {
     }
 }
 
-async function updateMessageSent(messageId) {
+async function updateMessageSent(messageId, status) {
     let connection = await connect();
 
     if (!connection) {
@@ -61,8 +61,8 @@ async function updateMessageSent(messageId) {
     try {
         let sql, binds, options, result;
 
-        sql = 'UPDATE OZEKIMESSAGEOUT set STATUS = :1 WHERE ID = :2';
-        binds = ['transmitted', messageId];
+        sql = 'UPDATE WHATSAPP_MSG set STATUS = :1 WHERE ID = :2';
+        binds = [status, messageId];
 
         options = {
             autoCommit: true,

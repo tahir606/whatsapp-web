@@ -21,15 +21,27 @@ async function sendMessages() {
         let messages = await orcCon.getMessagesToBeSent();
         for (let i = 0; i < messages.length; i++) {
 
+            console.log(messages[i]);
+
+            let id = messages[i].ID;
             let phone = messages[i].RECEIVER;
             let body = messages[i].MSG;
+            let attachment = messages[i].ATCHM;
 
-            console.log(`Sending[${i}]: ${body} to ${phone}`)
+            console.log(`Sending[${i}]: ${body} with ${attachment} to ${phone}`)
 
-            await whatsapp.sendMessage(phone, body)
-                .then( async (res) => {
-                    let id = messages[i].ID;
-                    await orcCon.updateMessageSent(id)
+            if (phone && (body || attachment)) {
+            } else {
+                await orcCon.updateMessageSent(id, 'E')
+                    .then((res) => {
+                        console.log('Invalid data. Error Status Logged');
+                    });
+                continue;
+            }
+
+            await whatsapp.sendMessage(phone, body, attachment)
+                .then(async (res) => {
+                    await orcCon.updateMessageSent(id, 'T')
                         .then((res) => {
                             console.log('Message Sent+Updated');
                         });
